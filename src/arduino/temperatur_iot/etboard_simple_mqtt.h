@@ -25,6 +25,7 @@ class ETBOARD_SIMPLE_MQTT {
     void onConnectionEstablished(void);
     void send_analog_a0(void);
     void publish(const String &topic, const String &payload);
+    void subscribe_mode(void);
     void send_analog(void);
     void send_digital(void);
     void recv_digital(void);

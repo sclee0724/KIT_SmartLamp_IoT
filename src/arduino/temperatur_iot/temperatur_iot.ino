@@ -46,6 +46,9 @@ static unsigned lastMillis = 0;
 
 int TRIG = D9;                       
 int ECHO = D8; 
+int brightness_value;
+int distance_value;
+String mode_am;
 
 //==========================================================================================
 void setup()
@@ -109,6 +112,8 @@ void loop()
       send_brightness();
       test1();      
    }
+
+  auto_mode();
    
   //----------------------------------------------------------------------------------------
   // Blink Operation LED
@@ -178,6 +183,7 @@ void send_distance()
   
   float duration = pulseIn (ECHO, HIGH);      
   float distance = duration * 17 / 1000;
+  distance_value = distance;
 
   String string_d = String(distance, 2); 
   mqtt.publish("/distance", String(string_d));
@@ -190,9 +196,32 @@ void send_brightness()
   delay(20);
   int cds = 0;
   cds = analogRead(A3);
+  brightness_value = cds;
+
   Serial.println(cds);
   mqtt.publish("/brightness", String(cds));
 }
+
+//==========================================================================================
+void auto_mode()
+//==========================================================================================
+{
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  
+  delay(10);
+  if(brightness_value < 2000){
+    digitalWrite(D3, HIGH);
+    if(distance_value < 8) digitalWrite(D2, HIGH);
+    else digitalWrite(D2, LOW);
+    
+  }
+  else {
+    digitalWrite(D2, LOW);
+    digitalWrite(D3, LOW);
+  }
+}
+
 
 //==========================================================================================
 //                                                    

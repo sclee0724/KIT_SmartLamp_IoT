@@ -176,6 +176,17 @@ void ETBOARD_SIMPLE_MQTT::recv_digital(void)
 }
 
 //=================================================================================
+void ETBOARD_SIMPLE_MQTT::subcribe_mode(void)
+//=================================================================================
+{
+  String mode_text;
+  client.subscribe(get_topic_prefix() + "/mode", [](const String & payload) {
+  mode_text = payload;
+  });
+  
+}
+
+//=================================================================================
 boolean ETBOARD_SIMPLE_MQTT::is_changed_digital(void)
 //=================================================================================
 {
