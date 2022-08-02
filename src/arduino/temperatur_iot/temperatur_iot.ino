@@ -40,7 +40,7 @@ DHT dht(DHTPIN, DHTTYPE);
 //==========================================================================================
 // Declaration
 //==========================================================================================
-const uint16_t NORMAL_SEND_INTERVAL = 1000 * 3;
+const uint16_t NORMAL_SEND_INTERVAL = 1000 * 1;
 
 static unsigned lastMillis = 0;
 
@@ -48,7 +48,7 @@ int TRIG = D9;
 int ECHO = D8; 
 int brightness_value;
 int distance_value;
-String mode_am;
+extern String mode_val;
 
 //==========================================================================================
 void setup()
@@ -93,7 +93,7 @@ void loop()
   // MQTT loop
   //----------------------------------------------------------------------------------------
   mqtt.loop();
-    
+  //mqtt.recv_system_value();
   //----------------------------------------------------------------------------------------
   //  Send sensor value
   //----------------------------------------------------------------------------------------
@@ -102,6 +102,17 @@ void loop()
       //mqtt.send_digital();
       send_distance();
       lastMillis = millis();
+      if(mode_val == "automatic"){
+        if(digitalRead(D3))
+          mqtt.publish("/D3", "1");
+        else
+          mqtt.publish("/D3", "0");
+          
+        if(digitalRead(D2))
+          mqtt.publish("/D2", "1");
+        else
+          mqtt.publish("/D2", "0");
+      }
    }  
 
   //----------------------------------------------------------------------------------------
@@ -112,14 +123,13 @@ void loop()
       send_brightness();
       test1();      
    }
+   if(mode_val == "automatic")
+    auto_mode();
 
-  auto_mode();
-   
   //----------------------------------------------------------------------------------------
   // Blink Operation LED
   //----------------------------------------------------------------------------------------  
   etb.normal_blink_led();
-  //recv_LED();
 }
 
 
@@ -209,11 +219,15 @@ void auto_mode()
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
   
-  delay(10);
   if(brightness_value < 2000){
     digitalWrite(D3, HIGH);
-    if(distance_value < 8) digitalWrite(D2, HIGH);
-    else digitalWrite(D2, LOW);
+    
+    if(distance_value < 8){
+      digitalWrite(D2, HIGH);
+    }
+    else{
+      digitalWrite(D2, LOW);
+    }
     
   }
   else {
