@@ -42,7 +42,7 @@ DHT dht(DHTPIN, DHTTYPE);
 //==========================================================================================
 // Declaration
 //==========================================================================================
-const uint16_t NORMAL_SEND_INTERVAL = 1000 * 3;
+const uint16_t NORMAL_SEND_INTERVAL = 1000 * 1;
 
 static unsigned lastMillis = 0;
 
@@ -50,8 +50,28 @@ int TRIG = D9;
 int ECHO = D8; 
 int brightness_value;
 int distance_value;
+extern String mode_val;
 
 //==========================================================================================
+#line 54 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void setup();
+#line 89 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void loop();
+#line 137 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void onConnectionEstablished();
+#line 145 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void display_BI();
+#line 155 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void test1();
+#line 164 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void send_temperature();
+#line 180 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void send_distance();
+#line 203 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void send_brightness();
+#line 216 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
+void auto_mode();
+#line 54 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
 void setup()
 //==========================================================================================
 {
@@ -94,7 +114,7 @@ void loop()
   // MQTT loop
   //----------------------------------------------------------------------------------------
   mqtt.loop();
-    
+  //mqtt.recv_system_value();
   //----------------------------------------------------------------------------------------
   //  Send sensor value
   //----------------------------------------------------------------------------------------
@@ -103,6 +123,17 @@ void loop()
       //mqtt.send_digital();
       send_distance();
       lastMillis = millis();
+      if(mode_val == "automatic"){
+        if(digitalRead(D3))
+          mqtt.publish("/D3", "1");
+        else
+          mqtt.publish("/D3", "0");
+          
+        if(digitalRead(D2))
+          mqtt.publish("/D2", "1");
+        else
+          mqtt.publish("/D2", "0");
+      }
    }  
 
   //----------------------------------------------------------------------------------------
@@ -113,14 +144,13 @@ void loop()
       send_brightness();
       test1();      
    }
+   if(mode_val == "automatic")
+    auto_mode();
 
-  auto_mode();
-   
   //----------------------------------------------------------------------------------------
   // Blink Operation LED
   //----------------------------------------------------------------------------------------  
   etb.normal_blink_led();
-  //recv_LED();
 }
 
 
@@ -203,15 +233,30 @@ void send_brightness()
   mqtt.publish("/brightness", String(cds));
 }
 
-void auto_mode(){
+//==========================================================================================
+void auto_mode()
+//==========================================================================================
+{
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  
   if(brightness_value < 2000){
-    digitalWrite(D3,HIGH);
-    if(distance_value < 8) digitalWrite(D2, HIGH);
-    else digitalWrite(D2, LOW);
+    digitalWrite(D3, HIGH);
+    
+    if(distance_value < 8){
+      digitalWrite(D2, HIGH);
+    }
+    else{
+      digitalWrite(D2, LOW);
+    }
     
   }
-  else digitalWrite(D3, LOW);
+  else {
+    digitalWrite(D2, LOW);
+    digitalWrite(D3, LOW);
+  }
 }
+
 
 //==========================================================================================
 //                                                    

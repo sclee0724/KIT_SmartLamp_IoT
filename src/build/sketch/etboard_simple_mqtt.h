@@ -19,6 +19,7 @@ class ETBOARD_SIMPLE_MQTT {
   public:
     String mqtt_prefix;
     String mac_address;
+//    String mode_val;
     
   	ETBOARD_SIMPLE_MQTT();
   	void setup(void);
@@ -26,8 +27,10 @@ class ETBOARD_SIMPLE_MQTT {
     void onConnectionEstablished(void);
     void send_analog_a0(void);
     void publish(const String &topic, const String &payload);
+    void subscribe_mode(void);
     void send_analog(void);
     void send_digital(void);
+    void recv_system_value(void);
     void recv_digital(void);
     boolean is_changed_digital(void);
     void loop(void);

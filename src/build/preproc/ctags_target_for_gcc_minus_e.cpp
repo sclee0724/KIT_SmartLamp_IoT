@@ -1,14 +1,22 @@
 # 1 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
 /******************************************************************************************
- * FileName     : temperature_iot.ino
- * Description  : 이티보드로 온도를 측정하여 스마트폰으로 확인
- * Author       : SCS
- * Created Date : 2022.07.20
- * Reference    : 
- * Modified     : 
- * Modified     : 
-******************************************************************************************/
 
+ * FileName     : temperature_iot.ino
+
+ * Description  : 이티보드로 온도를 측정하여 스마트폰으로 확인
+
+ * Author       : SCS
+
+ * Created Date : 2022.07.20
+
+ * Reference    : 
+
+ * Modified     : 
+
+ * Modified     : 
+
+******************************************************************************************/
+# 11 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
 //==========================================================================================
 // Firmware Version
 //==========================================================================================
@@ -41,7 +49,7 @@ DHT dht(D9 /* Digital pin connected to the DHT sensor*/, DHT11 /* DHT 11*/);
 //==========================================================================================
 // Declaration
 //==========================================================================================
-const uint16_t NORMAL_SEND_INTERVAL = 1000 * 3;
+const uint16_t NORMAL_SEND_INTERVAL = 1000 * 1;
 
 static unsigned lastMillis = 0;
 
@@ -49,27 +57,9 @@ int TRIG = D9;
 int ECHO = D8;
 int brightness_value;
 int distance_value;
+extern String mode_val;
 
 //==========================================================================================
-# 53 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void setup();
-# 88 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void loop();
-# 126 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void onConnectionEstablished();
-# 134 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void display_BI();
-# 144 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void test1();
-# 153 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void send_temperature();
-# 169 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void send_distance();
-# 192 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void send_brightness();
-# 204 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
-void auto_mode();
-# 53 "e:\\LSC\\ETboard_Temperature\\src\\arduino\\temperatur_iot\\temperatur_iot.ino"
 void setup()
 //==========================================================================================
 {
@@ -112,7 +102,7 @@ void loop()
   // MQTT loop
   //----------------------------------------------------------------------------------------
   mqtt.loop();
-
+  //mqtt.recv_system_value();
   //----------------------------------------------------------------------------------------
   //  Send sensor value
   //----------------------------------------------------------------------------------------
@@ -121,6 +111,17 @@ void loop()
       //mqtt.send_digital();
       send_distance();
       lastMillis = millis();
+      if(mode_val == "automatic"){
+        if(digitalRead(D3))
+          mqtt.publish("/D3", "1");
+        else
+          mqtt.publish("/D3", "0");
+
+        if(digitalRead(D2))
+          mqtt.publish("/D2", "1");
+        else
+          mqtt.publish("/D2", "0");
+      }
    }
 
   //----------------------------------------------------------------------------------------
@@ -131,14 +132,13 @@ void loop()
       send_brightness();
       test1();
    }
-
-  auto_mode();
+   if(mode_val == "automatic")
+    auto_mode();
 
   //----------------------------------------------------------------------------------------
   // Blink Operation LED
   //----------------------------------------------------------------------------------------  
   etb.normal_blink_led();
-  //recv_LED();
 }
 
 
@@ -221,15 +221,30 @@ void send_brightness()
   mqtt.publish("/brightness", String(cds));
 }
 
-void auto_mode(){
+//==========================================================================================
+void auto_mode()
+//==========================================================================================
+{
+  pinMode(D2, 0x02);
+  pinMode(D3, 0x02);
+
   if(brightness_value < 2000){
-    digitalWrite(D3,0x1);
-    if(distance_value < 8) digitalWrite(D2, 0x1);
-    else digitalWrite(D2, 0x0);
+    digitalWrite(D3, 0x1);
+
+    if(distance_value < 8){
+      digitalWrite(D2, 0x1);
+    }
+    else{
+      digitalWrite(D2, 0x0);
+    }
 
   }
-  else digitalWrite(D3, 0x0);
+  else {
+    digitalWrite(D2, 0x0);
+    digitalWrite(D3, 0x0);
+  }
 }
+
 
 //==========================================================================================
 //                                                    

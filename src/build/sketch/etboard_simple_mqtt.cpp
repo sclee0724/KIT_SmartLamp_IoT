@@ -25,7 +25,7 @@ EspMQTTClient client(
 int digitals[MAX_DIGITAL]      = {-1, -1, D2, D3, D4, D5, D6, D7, D8, D9};
 int digitals_mode[MAX_DIGITAL] = { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0};
 int digitals_value[MAX_DIGITAL]= {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-
+String mode_val = "automatic";
 
 //=================================================================================
 ETBOARD_SIMPLE_MQTT::ETBOARD_SIMPLE_MQTT() 
@@ -77,6 +77,7 @@ void ETBOARD_SIMPLE_MQTT::onConnectionEstablished(void)
   mac_address = WiFi.macAddress();
 
   recv_digital();
+  recv_system_value();
 }
 
 //=================================================================================
@@ -173,7 +174,23 @@ void ETBOARD_SIMPLE_MQTT::recv_digital(void)
   if (payload == "0") digitalWrite(D5, LOW);
     else digitalWrite(D5, HIGH);
   });
-  
+}
+
+//=================================================================================
+void ETBOARD_SIMPLE_MQTT::recv_system_value(void)
+//=================================================================================
+{
+client.subscribe(get_topic_prefix() + "/mode", [&](const String & payload) {
+  pinMode(D5, OUTPUT);
+  if (payload == "Auto"){
+    mode_val = "automatic";
+    digitalWrite(D5, HIGH);
+  }
+    else{
+      mode_val = "manual";
+      digitalWrite(D5, LOW);
+    }
+  });
 }
 
 //=================================================================================
