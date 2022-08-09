@@ -1,8 +1,0 @@
-{
-    "sketch": "temperatur_iot\\temperatur_iot.ino",
-    "configuration": "PartitionScheme=default,FlashFreq=80,UploadSpeed=921600,DebugLevel=none",
-    "board": "esp32:esp32:ET-Board",
-    "output": "../build",
-    "debugger": "jlink",
-    "port": "COM6"
-}
