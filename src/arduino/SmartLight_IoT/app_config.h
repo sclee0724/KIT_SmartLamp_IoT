@@ -16,6 +16,9 @@
 #include "lib/etboard_oled_u8g2.h"
 #include "lib/etboard_wifi.h"
 
+extern const char* board_hardware_verion;
+extern const char* board_firmware_verion;
+
 //==========================================================================================
 class APP_CONFIG 
 //==========================================================================================
@@ -24,8 +27,8 @@ class APP_CONFIG
   private:      
   
   public:          
-    const char* board_hardware_verion = "ETBoard_V1.1";
-    const char* board_firmware_verion = "smartLgt_v0.9";
+    //const char* board_hardware_verion = "ETBoard_V1.1";
+    //const char* board_firmware_verion = "smartLgt_v0.9";
     unsigned lastMillis;
     String operation_mode = "automatic";
     bool bDigitalChanged = false;

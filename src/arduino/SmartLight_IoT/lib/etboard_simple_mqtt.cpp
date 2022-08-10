@@ -3,9 +3,9 @@
  * Description  : ETboard Simple MQTT
  * Author       : SCS
  * Created Date : 2022.08.06
- * Reference    : 
- * Modified     : 
- * Modified     : 
+ * Reference    :
+ * Modified     :
+ * Modified     :
 ******************************************************************************************/
 
 #include "etboard_simple_mqtt.h"
@@ -24,15 +24,15 @@ EspMQTTClient client(
 #define MAX_ANALOG 8
 //int analogs[MAX_ANALOG]={36, 39, 32, 33, 34, 35, 25, 26};
 
-#define MAX_DIGITAL 10           // 0  1   2   3   4   5   6   7   8   9  
+#define MAX_DIGITAL 10           // 0  1   2   3   4   5   6   7   8   9
 int digitals[MAX_DIGITAL]      = {-1, -1, D2, D3, D4, D5, D6, D7, D8, D9};
 int digitals_mode[MAX_DIGITAL] = { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0};
 int digitals_value[MAX_DIGITAL]= {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 
 //=================================================================================
-ETBOARD_SIMPLE_MQTT::ETBOARD_SIMPLE_MQTT() 
-//=================================================================================	
+ETBOARD_SIMPLE_MQTT::ETBOARD_SIMPLE_MQTT()
+//=================================================================================
 {
   mqtt_simple_prefix = "et/smpl";
   mqtt_simple_cmnd = "cmnd";
@@ -49,23 +49,23 @@ void ETBOARD_SIMPLE_MQTT::setup(
     const char* mqttPassword,
     const char* mqttClientName)
 //=================================================================================
-{  
-  Serial.println("\n");    
+{
+  Serial.println("\n");
   Serial.println("================================================================");
-  Serial.println(" MQTT setup starting..... ");  
+  Serial.println(" MQTT setup starting..... ");
   Serial.println("================================================================");
-    
+
   mac_address = WiFi.macAddress();
-  
+
 	randomSeed(micros());
 	String str_client_name = mac_address.substring(9);
-  str_client_name += "_" + String(random(0xffff), HEX);  
+  str_client_name += "_" + String(random(0xffff), HEX);
   int str_len = str_client_name.length() + 1;
   str_client_name.toCharArray(ch_client_name, str_len);
-  client.setMqttClientName(ch_client_name);  
-  
-  client.setMqttServer(mqttServerIp, mqttUsername, mqttPassword, mqttServerPort); 
-      
+  client.setMqttClientName(ch_client_name);
+
+  client.setMqttServer(mqttServerIp, mqttUsername, mqttPassword, mqttServerPort);
+
   // Optional functionalities of EspMQTTClient
   client.enableDebuggingMessages(); // Enable debugging messages sent to serial output
   //client.enableHTTPWebUpdater(); // Enable the web updater. User and password default to values of MQTTUsername and MQTTPassword. These can be overridded with enableHTTPWebUpdater("user", "password").
@@ -73,7 +73,7 @@ void ETBOARD_SIMPLE_MQTT::setup(
   //client.enableLastWillMessage("TestClient/lastwill", "I am going offline");  // You can activate the retain flag by setting the third parameter to true
 
   Serial.println("================================================================");
-  Serial.println(" MQTT setup ending ..... ");  
+  Serial.println(" MQTT setup ending ..... ");
   Serial.println("================================================================");
 }
 
@@ -85,17 +85,17 @@ void ETBOARD_SIMPLE_MQTT::setup_with_wifi(
     const char* mqttUsername,
     const char* mqttPassword,
     const char* mqttClientName,
-    const short mqttServerPort) 
+    const short mqttServerPort)
 //=================================================================================
 {
-  Serial.println("\n");    
+  Serial.println("\n");
   Serial.println("================================================================");
-  Serial.println(" MQTT setup starting..... ");  
+  Serial.println(" MQTT setup starting..... ");
   Serial.println("================================================================");
-  
+
   client.setWifiCredentials(wifiSsid, wifiPassword);
-  client.setMqttServer(mqttServerIp, mqttUsername, mqttPassword, mqttServerPort); 
-    
+  client.setMqttServer(mqttServerIp, mqttUsername, mqttPassword, mqttServerPort);
+
   // Optional functionalities of EspMQTTClient
   client.enableDebuggingMessages(); // Enable debugging messages sent to serial output
   //client.enableHTTPWebUpdater(); // Enable the web updater. User and password default to values of MQTTUsername and MQTTPassword. These can be overridded with enableHTTPWebUpdater("user", "password").
@@ -103,7 +103,7 @@ void ETBOARD_SIMPLE_MQTT::setup_with_wifi(
   //client.enableLastWillMessage("TestClient/lastwill", "I am going offline");  // You can activate the retain flag by setting the third parameter to true
 
   Serial.println("================================================================");
-  Serial.println(" MQTT setup ending ..... ");  
+  Serial.println(" MQTT setup ending ..... ");
   Serial.println("================================================================");
 }
 
@@ -154,11 +154,11 @@ void ETBOARD_SIMPLE_MQTT::onConnectionEstablished(void)
   /*
   // Execute delayed instructions
   client.executeDelayed(5 * 1000, []() {
-    client.publish(get_topic_prefix() 
+    client.publish(get_topic_prefix()
         + "/info/version",  String(board_hardware_verion) + "/" + String(board_firmware_verion));
   });
   */
-  
+
   //mac_address = WiFi.macAddress();
 
   recv_digital();
@@ -168,7 +168,7 @@ void ETBOARD_SIMPLE_MQTT::onConnectionEstablished(void)
 void ETBOARD_SIMPLE_MQTT::send_test_analog_a0(void)
 //=================================================================================
 {
-  int sensorValue = 0; 
+  int sensorValue = 0;
   sensorValue = analogRead(A0);
   client.publish("etboard/a0", String(sensorValue));
 }
@@ -176,7 +176,7 @@ void ETBOARD_SIMPLE_MQTT::send_test_analog_a0(void)
 //=================================================================================
 void ETBOARD_SIMPLE_MQTT::publish_tele(const String &topic, const String &payload)
 //=================================================================================
-{  
+{
   client.publish(get_tele_prefix() + topic, payload);
 }
 
@@ -184,23 +184,21 @@ void ETBOARD_SIMPLE_MQTT::publish_tele(const String &topic, const String &payloa
 void ETBOARD_SIMPLE_MQTT::send_analog(void)
 //=================================================================================
 {
-  StaticJsonBuffer<300> JSONbuffer;
-  JsonObject& JSONencoder = JSONbuffer.createObject(); 
-  
-  JsonArray& values = JSONencoder.createNestedArray("values");
+  StaticJsonDocument<300> doc;
+  JsonArray data = doc.createNestedArray("values");
 
-  int sensorValue = 0; 
-  sensorValue = analogRead(A0); values.add(sensorValue);
-  sensorValue = analogRead(A1); values.add(sensorValue);
-  sensorValue = analogRead(A2); values.add(sensorValue);
-  sensorValue = analogRead(A3); values.add(sensorValue);
-  sensorValue = analogRead(A4); values.add(sensorValue);
-  sensorValue = analogRead(A5); values.add(sensorValue);
- 
-  char JSONmessageBuffer[100];
-  JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
- 
-  if (client.publish(get_topic_prefix() + "/analog", JSONmessageBuffer) == true) {
+  int sensorValue = 0;
+  sensorValue = analogRead(A0); data.add(sensorValue);
+  sensorValue = analogRead(A1); data.add(sensorValue);
+  sensorValue = analogRead(A2); data.add(sensorValue);
+  sensorValue = analogRead(A3); data.add(sensorValue);
+  sensorValue = analogRead(A4); data.add(sensorValue);
+  sensorValue = analogRead(A5); data.add(sensorValue);
+
+  String output;
+  serializeJson(doc, output);
+
+  if (client.publish(get_topic_prefix() + "/analog", output) == true) {
     //Serial.println("Success sending message");
   } else {
     //Serial.println("Error sending message");
@@ -210,20 +208,18 @@ void ETBOARD_SIMPLE_MQTT::send_analog(void)
 //=================================================================================
 void ETBOARD_SIMPLE_MQTT::send_digital(void)
 //=================================================================================
-{    
-  StaticJsonBuffer<300> JSONbuffer;
-  JsonObject& JSONencoder = JSONbuffer.createObject(); 
- 
-  JsonArray& values = JSONencoder.createNestedArray("values");
+{
+  StaticJsonDocument<300> doc;
+  JsonArray data = doc.createNestedArray("values");
 
-  for (int pinNumber = 0; pinNumber < MAX_DIGITAL; pinNumber++) {  
-    values.add(digitals_value[pinNumber]);
-  }   
-  
-  char JSONmessageBuffer[100];
-  JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
- 
-  if (client.publish(get_tele_prefix() + "/digital", JSONmessageBuffer) == true) {
+  for (int pinNumber = 0; pinNumber < MAX_DIGITAL; pinNumber++) {
+    data.add(digitals_value[pinNumber]);
+  }
+
+  String output;
+  serializeJson(doc, output);
+
+  if (client.publish(get_tele_prefix() + "/digital", output) == true) {
     //Serial.println("Success sending message");
   } else {
     //Serial.println("Error sending message");
@@ -258,7 +254,7 @@ void ETBOARD_SIMPLE_MQTT::recv_digital(void)
   if (payload == "0") digitalWrite(D5, LOW);
     else digitalWrite(D5, HIGH);
   });
-  
+
 }
 
 //=================================================================================
@@ -267,26 +263,26 @@ boolean ETBOARD_SIMPLE_MQTT::is_changed_digital(void)
 {
   // check if different current and previous value
   boolean bFound = false;
-  for (int pinNumber = 6; pinNumber < MAX_DIGITAL; pinNumber++) {  
-      int pin = digitals[pinNumber];  
-      if(pin >= 0) {        
-        pinMode(pin,INPUT);  
-        int val = digitalRead(pin); 
+  for (int pinNumber = 6; pinNumber < MAX_DIGITAL; pinNumber++) {
+      int pin = digitals[pinNumber];
+      if(pin >= 0) {
+        pinMode(pin,INPUT);
+        int val = digitalRead(pin);
 
         // 2018.10.15 : SCS : To reverse 4 buttons's value on board is pull-up circuit
-        if( pinNumber >=6 && pinNumber <= 9) 
+        if( pinNumber >=6 && pinNumber <= 9)
         {
           val = !val;
         }
 
-        if (digitals_value[pinNumber] != val) {  
-          digitals_value[pinNumber] = val;     
+        if (digitals_value[pinNumber] != val) {
+          digitals_value[pinNumber] = val;
           bFound = true;
-        }      
+        }
      }
-  }      
+  }
   return bFound;
-  
+
 }
 
 //=================================================================================
@@ -316,7 +312,7 @@ void ETBOARD_SIMPLE_MQTT::dg_Write(int pin, int value)
 //==========================================================================================
 void ETBOARD_SIMPLE_MQTT::update_digital_value(void)
 //==========================================================================================
-{ 
+{
   previous_digital_value[2] = current_digital_value[2];
   previous_digital_value[3] = current_digital_value[3];
   previous_digital_value[4] = current_digital_value[4];
@@ -330,7 +326,7 @@ void ETBOARD_SIMPLE_MQTT::update_digital_value(void)
 //==========================================================================================
 bool ETBOARD_SIMPLE_MQTT::isChanged_digital_value(void)
 //==========================================================================================
-{ 
+{
   for(int i=2; i<MAX_DIGITAL; i++) {
     if (previous_digital_value[i] != current_digital_value[i]) {
       return true;
@@ -353,7 +349,7 @@ void ETBOARD_SIMPLE_MQTT::initailize_digital_value()
 //==========================================================================================
 int ETBOARD_SIMPLE_MQTT::dg_Read(int pin)
 //==========================================================================================
-{  
+{
   int value = 0;
   switch (pin) {
     case D2: value = current_digital_value[2]; break;
@@ -369,7 +365,7 @@ int ETBOARD_SIMPLE_MQTT::dg_Read(int pin)
   return value;
 }
 
- 
+
 //=================================================================================
 // End of Line
 //=================================================================================
